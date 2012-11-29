@@ -1,0 +1,19 @@
+# This is a sample plugin.yml
+# For more infomration refer to http://wiki.bukkit.org/Plugin_YAML
+main: szhang_unca_edu.RandomArena.RandomArena
+name: ${project.name}
+version: ${project.version}
+author: ShuoZhang
+description: ${project.description}
+commands:
+  random:
+    description: Commands
+    usage: use [ /<random> description ] for all available commands
+    permission: random.*
+permissions:
+  random.*:
+    description: gives all permissions of the Plugin
+    default: true
+    children:
+      random.description:
+        description: explains all available commands         
