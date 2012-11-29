@@ -16,6 +16,8 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
     private final RandomArena plugin;
 
     /*
+     * Test Message
+     * 
      * This command executor needs to know about its plugin from which it came from
      */
     public RandomArenaCommandExecutor(RandomArena plugin) {
