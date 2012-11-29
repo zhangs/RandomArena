@@ -8,7 +8,7 @@ description: ${project.description}
 commands:
   random:
     description: Commands
-    usage: use [ /<random> description ] for all available commands
+    usage: use [ /random help ] for all available commands
     permission: random.*
 permissions:
   random.*:

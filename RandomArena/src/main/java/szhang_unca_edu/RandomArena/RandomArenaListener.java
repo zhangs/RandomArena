@@ -35,12 +35,18 @@ public class RandomArenaListener implements Listener {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage(this.plugin.getConfig().getString("sample.message"));  
+        event.getPlayer().sendMessage(this.plugin.getConfig().getString("sample.message"));
+        plugin.playersready.put(event.getPlayer(), false);        
     }
     
 	@EventHandler(priority = EventPriority.HIGH)
 	public void arenabounds (PlayerMoveEvent event) {
-		if (plugin.abilities.get("arenaset")) {						
+		if (plugin.abilities.get("arenaset")) {		
+			if (plugin.playersready.containsValue(false)) {
+				event.setCancelled(true);			
+				event.getPlayer().teleport(event.getFrom());				
+			}
+			
 			if (event.getTo().getX() < plugin.arenacoordinates.get("x1") || 
 					event.getTo().getX() > plugin.arenacoordinates.get("x2")) {
 				event.setCancelled(true);			

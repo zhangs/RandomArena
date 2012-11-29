@@ -17,6 +17,8 @@ public class RandomArena extends JavaPlugin {
 	public Map <Player, Integer> monsterskilled;
 	public Map <Player, Boolean> playersready;
 	public Map <String, Boolean> abilities;
+	public Map <String, Player> arenasetter;
+
 	
 
 
@@ -29,7 +31,7 @@ public class RandomArena extends JavaPlugin {
 		monsterskilled = new HashMap<Player, Integer>();	
 		playersready = new HashMap<Player, Boolean>();	
 		abilities = new HashMap<String, Boolean>();
-		
+		arenasetter = new HashMap<String, Player>();
 
         // save the configuration file
         saveDefaultConfig();
