@@ -14,9 +14,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class RandomArena extends JavaPlugin {	
 	public Map <String, Integer> arenacoordinates;
-	public Map <Player, Integer> monsterskilled;
+	public Map <String, Integer> monsterskilled;
 	public Map <Player, Boolean> playersready;
-	public Map <String, Boolean> abilities;
+	public Map <String, Boolean> worldvariables;
 	public Map <String, Player> arenasetter;
 
 	
@@ -28,9 +28,9 @@ public class RandomArena extends JavaPlugin {
     @Override
     public void onEnable() {
 		arenacoordinates = new HashMap<String, Integer>();	
-		monsterskilled = new HashMap<Player, Integer>();	
+		monsterskilled = new HashMap<String, Integer>();	
 		playersready = new HashMap<Player, Boolean>();	
-		abilities = new HashMap<String, Boolean>();
+		worldvariables = new HashMap<String, Boolean>();
 		arenasetter = new HashMap<String, Player>();
 
         // save the configuration file
