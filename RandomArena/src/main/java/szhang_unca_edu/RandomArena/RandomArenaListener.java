@@ -88,15 +88,11 @@ public class RandomArenaListener implements Listener {
 			monsterIds[9] = 62;
 							
 			if (plugin.worldvariables.get("started") && plugin.playersready.get(event.getEntity().getKiller())) {
-				plugin.monsterskilled.put("killed", plugin.monsterskilled.get("killed") + 1);
-				
-				// test
-				event.getEntity().getKiller().sendMessage(plugin.monsterskilled.get("killed") + " Killed!");		
+				plugin.monsterskilled.put("killed", plugin.monsterskilled.get("killed") + 1);	
 			}
 			
 			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0) {
-				//test
-				event.getEntity().getKiller().sendMessage("New spawn");
+		        plugin.monsterskilled.put("wave", plugin.monsterskilled.get("wave") + 1);
 				
 		        // spawn
 				int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
@@ -136,6 +132,7 @@ public class RandomArenaListener implements Listener {
     public void worldset(PluginEnableEvent event) {
         plugin.worldvariables.put("arenaset", false); 
         plugin.worldvariables.put("started", false);
+        plugin.monsterskilled.put("wave", 0);
     }
     
     
