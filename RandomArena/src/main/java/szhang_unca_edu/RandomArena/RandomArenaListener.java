@@ -1,6 +1,7 @@
 package szhang_unca_edu.RandomArena;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Location;
@@ -16,6 +17,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 /*
  * This is a sample event listener
@@ -41,9 +43,12 @@ public class RandomArenaListener implements Listener {
         event.getPlayer().sendMessage(this.plugin.getConfig().getString("sample.message"));
         plugin.playersready.put(event.getPlayer(), false);  
         event.getPlayer().setItemInHand(new ItemStack (Material.DIAMOND_SWORD));
+        event.getPlayer().getInventory().addItem(new ItemStack(Material.BOW, 1));
+        event.getPlayer().getInventory().addItem(new ItemStack(Material.ARROW, 50));        
     }
     
-	@EventHandler(priority = EventPriority.HIGH)
+    // prevents the player from moving in certain cases
+	@EventHandler(priority = EventPriority.LOW)
 	public void arenabounds (PlayerMoveEvent event) {
 		if (plugin.worldvariables.get("arenaset")) {		
 			if (plugin.playersready.get(event.getPlayer())) {
@@ -67,11 +72,15 @@ public class RandomArenaListener implements Listener {
 		}
 	}    
 		
+	// when enemy is killed by player
 	@EventHandler
 	public void enemydeath (EntityDeathEvent event) {	
-        Random randomnum = new Random();        					
-		
+        Random randomnum = new Random();        							
+		List <Player> players;		    	    	
+        
 		if (event.getEntity().getKiller() != null) {
+			players = event.getEntity().getKiller().getWorld().getPlayers();		    	    	
+			
 			Player player = (Player) event.getEntity().getKiller();
 			
 			int monsterIds [] = new int[10];
@@ -87,12 +96,23 @@ public class RandomArenaListener implements Listener {
 			monsterIds[8] = 61;	
 			monsterIds[9] = 62;
 							
-			if (plugin.worldvariables.get("started") && plugin.playersready.get(event.getEntity().getKiller())) {
+			if (plugin.worldvariables.get("started") && plugin.playersready.get(event.getEntity().getKiller())) {				
 				plugin.monsterskilled.put("killed", plugin.monsterskilled.get("killed") + 1);	
+				
+		        for (int i = 0; i < plugin.playersready.size(); i++) {
+		        	players.get(i).sendMessage(plugin.monsterskilled.get("killed") + " monsters have been killed!");
+		        }
 			}
 			
 			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0) {
 		        plugin.monsterskilled.put("wave", plugin.monsterskilled.get("wave") + 1);
+		        
+		        // world settings changed here
+		        if (plugin.monsterskilled.get("wave") == 5) {
+		        	if (randomnum.nextInt(100) > 50) {
+		        		worldevents(plugin.monsterskilled.get("wave"), event.getEntity().getKiller(), players);
+		        	}
+		        }
 				
 		        // spawn
 				int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
@@ -132,22 +152,41 @@ public class RandomArenaListener implements Listener {
     public void worldset(PluginEnableEvent event) {
         plugin.worldvariables.put("arenaset", false); 
         plugin.worldvariables.put("started", false);
+		plugin.worldvariables.put("torrent", false);        
         plugin.monsterskilled.put("wave", 0);
     }
     
-    
-    /*
-     * Another example of a event handler. This one will give you the name of
-     * the entity you interact with, if it is a Creature it will give you the
-     * creature Id.
-     */
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEntityEvent event) {
-        final EntityType entityType = event.getRightClicked().getType();
-
-        event.getPlayer().sendMessage(MessageFormat.format(
-                "You interacted with a {0} it has an id of {1}",
-                entityType.getName(),
-                entityType.getTypeId()));
+    // world events decided here
+    public void worldevents(int wavenumber, Player player, List <Player> players) {    	
+    	if (wavenumber == 5) { 
+    		
+	        for (int i = 0; i < plugin.playersready.size(); i++) {
+	        	players.get(i).sendMessage("A torrent has started!");
+	        }
+    		
+    		player.getWorld().setStorm(true);
+    		player.getWorld().setThundering(true);
+    		plugin.worldvariables.put("torrent", true);
+    	}    	    	
     }
+    
+    // World events that occur
+	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+	public void worldcontrol (PlayerMoveEvent event) {
+		Random randomnum = new Random();
+		
+		if (plugin.worldvariables.get("torrent")) {
+			if (randomnum.nextInt(500) < 10) {
+				Location loc = event.getPlayer().getLocation();
+			        
+				loc.setX(randomnum.nextInt(((plugin.arenacoordinates.get("x2")) - (plugin.arenacoordinates.get("x1")))) 
+							+ plugin.arenacoordinates.get("x1") + 1);					
+				loc.setZ(randomnum.nextInt(((plugin.arenacoordinates.get("z2")) - (plugin.arenacoordinates.get("z1")))) 
+							+ plugin.arenacoordinates.get("z1") + 1);	
+				loc.setY(loc.getWorld().getHighestBlockYAt(loc));			
+				
+				loc.getBlock().setType(Material.WATER);
+			}								
+		}			
+	}	
 }

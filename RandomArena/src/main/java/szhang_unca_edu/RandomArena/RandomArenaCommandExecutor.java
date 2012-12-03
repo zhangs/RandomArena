@@ -96,7 +96,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        
 			        // Create wall of obsidian to stop everything from escaping			        
 			        Location blockloc = player.getLocation();
-			        
+
 			        for(int x = plugin.arenacoordinates.get("x1"); x <= plugin.arenacoordinates.get("x2"); x++) {
 			        	for(int z = plugin.arenacoordinates.get("z1"); z <= plugin.arenacoordinates.get("z2"); z++) {
 			        		if(x == plugin.arenacoordinates.get("x1") || x == plugin.arenacoordinates.get("x2")
@@ -121,7 +121,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        			
 			        			// set height of wall
 			        			int highestblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
-			        			
+
 			        			for(int y = highestblock; y < highestblock + 6; y++) {
 			        				blockloc.setY(y);
 			        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.OBSIDIAN);
@@ -166,47 +166,47 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 		        for (int i = 0; i < plugin.playersready.size(); i++) {
 		        	plugin.playersready.put(players.get(i), false);
 		        }
+		        
+		        // Remove wall of obsidian to release player	        
+		        Location blockloc = player.getLocation();
+
+		        for(int x = plugin.arenacoordinates.get("x1"); x <= plugin.arenacoordinates.get("x2"); x++) {
+		        	for(int z = plugin.arenacoordinates.get("z1"); z <= plugin.arenacoordinates.get("z2"); z++) {
+		        		if(x == plugin.arenacoordinates.get("x1") || x == plugin.arenacoordinates.get("x2")
+		        				|| z == plugin.arenacoordinates.get("z1") || z == plugin.arenacoordinates.get("z2")) {
+		        			if(x == plugin.arenacoordinates.get("x1")) {
+		        				blockloc.setZ(z - 1);
+		        				blockloc.setX(x);
+		        			}
+		        			if(x == plugin.arenacoordinates.get("x2")) {
+		        				blockloc.setZ(z + 1);
+		        				blockloc.setX(x);			        				
+		        			}
+		        			if(z == plugin.arenacoordinates.get("z1")) {
+		        				blockloc.setZ(z);			        				
+		        				blockloc.setX(x - 1);
+		        			}
+		        			
+		        			if(z == plugin.arenacoordinates.get("z2")) {
+		        				blockloc.setZ(z);
+		        				blockloc.setX(x + 1);
+		        			}
+		        			
+		        			// set height of wall
+		        			int originalblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
+		        			originalblock = originalblock - 6;
+
+		        			for(int y = originalblock; y <originalblock + 6; y++) {
+		        				blockloc.setY(y);
+		        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.AIR);
+		        			}
+		        		}			        					        	
+		        	}
+		        }		        
 			}
 			else {
 				player.sendMessage("You did not create the arena active");
-			}
-			
-			
-	        // Remove wall of obsidian to release player	        
-	        Location blockloc = player.getLocation();
-	        
-	        for(int x = plugin.arenacoordinates.get("x1"); x <= plugin.arenacoordinates.get("x2"); x++) {
-	        	for(int z = plugin.arenacoordinates.get("z1"); z <= plugin.arenacoordinates.get("z2"); z++) {
-	        		if(x == plugin.arenacoordinates.get("x1") || x == plugin.arenacoordinates.get("x2")
-	        				|| z == plugin.arenacoordinates.get("z1") || z == plugin.arenacoordinates.get("z2")) {
-	        			if(x == plugin.arenacoordinates.get("x1")) {
-	        				blockloc.setZ(z - 1);
-	        				blockloc.setX(x);
-	        			}
-	        			if(x == plugin.arenacoordinates.get("x2")) {
-	        				blockloc.setZ(z + 1);
-	        				blockloc.setX(x);			        				
-	        			}
-	        			if(z == plugin.arenacoordinates.get("z1")) {
-	        				blockloc.setZ(z);			        				
-	        				blockloc.setX(x - 1);
-	        			}
-	        			
-	        			if(z == plugin.arenacoordinates.get("z2")) {
-	        				blockloc.setZ(z);
-	        				blockloc.setX(x + 1);
-	        			}
-	        			
-	        			// set height of wall
-	        			int highestblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
-	        			
-	        			for(int y = highestblock; y < highestblock + 6; y++) {
-	        				blockloc.setY(y);
-	        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.AIR);
-	        			}
-	        		}			        					        	
-	        	}
-	        }			
+			}									
 			
 			return true;
 		}
