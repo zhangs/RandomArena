@@ -84,13 +84,16 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        plugin.arenasetter.put("arenasetter", player);
 			        plugin.playersready.put(player, true);	
 			        
+			        //Gets middle of location
 			        Location loc = player.getLocation();
 			        int newx = (plugin.arenacoordinates.get("x1") + plugin.arenacoordinates.get("x2")) / 2;
 			        int newz = (plugin.arenacoordinates.get("z1") + plugin.arenacoordinates.get("z2")) / 2;
 			        
+			        //Sets loc's x and z to middle coordinates
 			        loc.setX(newx);
 			        loc.setZ(newz);
 			        
+			        //Sets the y value of loc
 			        int newy = loc.getWorld().getHighestBlockYAt(loc);
 			        loc.setY(newy);
 			        
@@ -130,7 +133,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        	}
 			        }
 			        
-			        
+			        //Teleports player to middle location
 			        player.teleport(loc);			        
 				}
 				else {
@@ -144,7 +147,8 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 		// teleports player to starting point
 		else if (args[0].equalsIgnoreCase("teleport")) {
 			Player player = (Player) sender;								
-
+			
+			//if there is an arena that hasn't started yet, allows the player to teleport to it
 			if (plugin.worldvariables.get("arenaset") == true && plugin.worldvariables.get("started") == false) {								        
 		        player.teleport(plugin.arenasetter.get("arenasetter").getLocation());		
 		        
@@ -217,6 +221,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 		else if (args[0].equalsIgnoreCase("start")) {
 			plugin.monsterskilled.put("killed", 0);
 			
+			//Array for monster ids for spawning
 			int monsterIds [] = new int[10];
 			
 			monsterIds[0] = 50; //53 is Giant
