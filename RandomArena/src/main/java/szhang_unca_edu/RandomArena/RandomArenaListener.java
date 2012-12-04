@@ -12,6 +12,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -19,9 +21,6 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-/*
- * This is a sample event listener
- */
 public class RandomArenaListener implements Listener {
     private final RandomArena plugin;
 
@@ -44,7 +43,7 @@ public class RandomArenaListener implements Listener {
         plugin.playersready.put(event.getPlayer(), false);  
         event.getPlayer().setItemInHand(new ItemStack (Material.DIAMOND_SWORD));
         event.getPlayer().getInventory().addItem(new ItemStack(Material.BOW, 1));
-        event.getPlayer().getInventory().addItem(new ItemStack(Material.ARROW, 50));        
+        event.getPlayer().getInventory().addItem(new ItemStack(Material.ARROW, 50));     
     }
     
     // prevents the player from moving in certain cases
@@ -106,13 +105,21 @@ public class RandomArenaListener implements Listener {
 			
 			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0) {
 		        plugin.monsterskilled.put("wave", plugin.monsterskilled.get("wave") + 1);
+				
+		        // Whenever a new wave starts, any world events are removed until triggered again
+		        plugin.worldvariables.put("torrent", false);
+				plugin.worldvariables.put("lightning", false); 		
+				plugin.worldvariables.put("teleport", false); 		        				
+				player.getWorld().setThundering(false);
+				player.getWorld().setStorm(false);			
 		        
 		        // world settings changed here
-		        if (plugin.monsterskilled.get("wave") == 5) {
-		        	if (randomnum.nextInt(100) > 50) {
+		        if (plugin.monsterskilled.get("wave") % 5 == 0 || plugin.monsterskilled.get("wave") % 2 == 0 || 
+		        		plugin.monsterskilled.get("wave") % 13 == 0) {
+		        	if (randomnum.nextInt(100) > 40) {
 		        		worldevents(plugin.monsterskilled.get("wave"), event.getEntity().getKiller(), players);
 		        	}
-		        }
+		        }		        
 				
 		        // spawn
 				int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
@@ -147,27 +154,48 @@ public class RandomArenaListener implements Listener {
 	}
     
     
-    // sets worldly events to false upon start of plugin
+    // sets worldly events upon start of plugin
     @EventHandler
     public void worldset(PluginEnableEvent event) {
         plugin.worldvariables.put("arenaset", false); 
         plugin.worldvariables.put("started", false);
-		plugin.worldvariables.put("torrent", false);        
+		plugin.worldvariables.put("torrent", false);
+		plugin.worldvariables.put("lightning", false); 
+		plugin.worldvariables.put("teleport", false);        				
         plugin.monsterskilled.put("wave", 0);
     }
     
     // world events decided here
-    public void worldevents(int wavenumber, Player player, List <Player> players) {    	
-    	if (wavenumber == 5) { 
-    		
+    public void worldevents(int wavenumber, Player player, List <Player> players) {   
+    	// Rainfall is classified as violent when the precipitation rate is greater than "5"0 mm per hour!
+    	if (wavenumber % 5 == 0) {     		
 	        for (int i = 0; i < plugin.playersready.size(); i++) {
 	        	players.get(i).sendMessage("A torrent has started!");
 	        }
     		
     		player.getWorld().setStorm(true);
-    		player.getWorld().setThundering(true);
     		plugin.worldvariables.put("torrent", true);
-    	}    	    	
+    	} 
+    	
+    	// Lightning strikes are the number 2 weather killer in the US!
+    	if (wavenumber % 2 == 0) {     		
+	        for (int i = 0; i < plugin.playersready.size(); i++) {
+	        	players.get(i).sendMessage("Beware of Thunder!");
+	        }
+    		
+    		player.getWorld().setStorm(true);
+    		player.getWorld().setThundering(true);
+    		plugin.worldvariables.put("lightning", true);
+    	}
+    	
+    	// How unlucky! ......RIP
+    	if (wavenumber % 13 == 0) {     		
+	        for (int i = 0; i < plugin.playersready.size(); i++) {
+	        	players.get(i).sendMessage("Suddenly, enemies...!");
+	        }
+    		
+    		plugin.worldvariables.put("teleport", true);
+    	}    	
     }
     
     // World events that occur
@@ -175,6 +203,7 @@ public class RandomArenaListener implements Listener {
 	public void worldcontrol (PlayerMoveEvent event) {
 		Random randomnum = new Random();
 		
+		// Be careful, a flood might be coming?!
 		if (plugin.worldvariables.get("torrent")) {
 			if (randomnum.nextInt(500) < 10) {
 				Location loc = event.getPlayer().getLocation();
@@ -187,6 +216,34 @@ public class RandomArenaListener implements Listener {
 				
 				loc.getBlock().setType(Material.WATER);
 			}								
-		}			
+		}	
+		
+		// Not that you can dodge it, but beware of lightning!
+		if (plugin.worldvariables.get("lightning")) {
+			if (randomnum.nextInt(500) < 4) {
+				Location loc = event.getPlayer().getLocation();				
+				
+				loc.getWorld().strikeLightning(loc);
+			}								
+		}		
+	}
+	
+	@EventHandler
+	public void playerdeath (PlayerDeathEvent event) {
+		// resets player to not ready when they die
+		plugin.playersready.put(event.getEntity(), false);
+	}
+	
+	@EventHandler
+	public void enemytarget (EntityTargetEvent event) {
+		// entities teleport at player when they target player
+		if (plugin.worldvariables.get("teleport")) {
+			Location loc = event.getTarget().getLocation();
+			loc.setX(loc.getX() - 2);
+			loc.setZ(loc.getZ() - 2);
+			loc.setY(loc.getWorld().getHighestBlockYAt(loc));
+			
+			event.getEntity().teleport(loc);
+		}
 	}	
 }

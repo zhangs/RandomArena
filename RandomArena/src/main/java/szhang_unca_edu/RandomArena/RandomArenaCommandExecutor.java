@@ -15,11 +15,6 @@ import org.bukkit.entity.Player;
 
 import com.google.common.base.Joiner;
 
-// Start -> Cancel -> Set arena = Not frozen in space
-// Player death -> Spawn in non-arena = frozen
-/*
- * This is a sample CommandExectuor
- */
 public class RandomArenaCommandExecutor implements CommandExecutor {	
     private final RandomArena plugin;
 
@@ -30,9 +25,6 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    /*
-     * On command set the sample message
-     */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length == 0) {
 			return false;
@@ -45,6 +37,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 
 		} 
 		
+		// help on available commands
 		else if (args[0].equalsIgnoreCase("help")) {
 			Player player = (Player) sender;				
 			player.sendMessage("Available commands:");
@@ -56,7 +49,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			return true;
 		}
 		
-		// sets arena perimeters  /random set 50 50 100 100 (x1 z1 x2 z2)
+		// sets arena perimeters
 		else if (args[0].equalsIgnoreCase("set")) {
 			if (args.length > 4) {
 				Player player = (Player) sender;				
@@ -122,7 +115,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        			// set height of wall
 			        			int highestblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
 
-			        			for(int y = highestblock; y < highestblock + 6; y++) {
+			        			for(int y = highestblock; y < highestblock + 12; y++) {
 			        				blockloc.setY(y);
 			        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.OBSIDIAN);
 			        			}
@@ -141,6 +134,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			}
 		}
 		
+		// teleports player to starting point
 		else if (args[0].equalsIgnoreCase("teleport")) {
 			Player player = (Player) sender;								
 
@@ -156,6 +150,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 	        return true;
 		}
 			
+		// cancels arena set
 		else if (args[0].equalsIgnoreCase("cancel")) {
 			Player player = (Player) sender;	
 			List <Player> players = player.getWorld().getPlayers();
@@ -194,9 +189,9 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 		        			
 		        			// set height of wall
 		        			int originalblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
-		        			originalblock = originalblock - 6;
+		        			originalblock = originalblock - 12;
 
-		        			for(int y = originalblock; y <originalblock + 6; y++) {
+		        			for(int y = originalblock; y <originalblock + 12; y++) {
 		        				blockloc.setY(y);
 		        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.AIR);
 		        			}
@@ -211,6 +206,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			return true;
 		}
 		
+		// starts arena game
 		else if (args[0].equalsIgnoreCase("start")) {
 			plugin.monsterskilled.put("killed", 0);
 			
