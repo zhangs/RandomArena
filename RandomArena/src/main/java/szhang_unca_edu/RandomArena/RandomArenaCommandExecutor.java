@@ -134,7 +134,9 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			        }
 			        
 			        //Teleports player to middle location
-			        player.teleport(loc);			        
+			        player.teleport(loc);
+			        
+			        player.getWorld().setTime(12000);
 				}
 				else {
 					player.sendMessage("Arena already created, please use /random teleport to join");
@@ -168,6 +170,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 
 			if (plugin.arenasetter.get("arenasetter") == player) {
 		        plugin.worldvariables.put("arenaset", false);
+		        plugin.worldvariables.put("started", false);
 		        
 		        for (int i = 0; i < plugin.playersready.size(); i++) {
 		        	plugin.playersready.put(players.get(i), false);
@@ -239,38 +242,42 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 
 			if (plugin.worldvariables.get("arenaset")) {
 				if (plugin.arenasetter.get("arenasetter") == player) {
-			        // spawn
-					int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
-					int difz = plugin.arenacoordinates.get("z2") - plugin.arenacoordinates.get("z1");
-					int area = difx * difz;
-					int spawnNum = area / 500;					
-					
-					// if area is too small, set spawn number to a certain number
-					if (spawnNum < 4) {
-						spawnNum = 4;
-					}
-					
-					
-					plugin.monsterskilled.put("killtospawn", spawnNum - 1);
-					
-					Location loc = player.getLocation();
-			        Random randomnum = new Random();        	
-					
-					for (int i = 0; i < spawnNum; i++) {
-						loc.setX(randomnum.nextInt(((plugin.arenacoordinates.get("x2"))
-								- (plugin.arenacoordinates.get("x1")))) 
-								+ plugin.arenacoordinates.get("x1") + 1);
+					if (plugin.worldvariables.get("started") == false) {
+				        // spawn
+						int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
+						int difz = plugin.arenacoordinates.get("z2") - plugin.arenacoordinates.get("z1");
+						int area = difx * difz;
+						int spawnNum = area / 500;					
 						
-						loc.setZ(randomnum.nextInt(((plugin.arenacoordinates.get("z2"))
-								- (plugin.arenacoordinates.get("z1")))) 
-								+ plugin.arenacoordinates.get("z1") + 1);	
+						// if area is too small, set spawn number to a certain number
+						if (spawnNum < 4) {
+							spawnNum = 4;
+						}						
 						
-						loc.setY(loc.getWorld().getHighestBlockYAt(loc));																		
-												
-						player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
+						plugin.monsterskilled.put("killtospawn", spawnNum - 1);
+						
+						Location loc = player.getLocation();
+				        Random randomnum = new Random();        	
+						
+						for (int i = 0; i < spawnNum; i++) {
+							loc.setX(randomnum.nextInt(((plugin.arenacoordinates.get("x2"))
+									- (plugin.arenacoordinates.get("x1")))) 
+									+ plugin.arenacoordinates.get("x1") + 1);
+							
+							loc.setZ(randomnum.nextInt(((plugin.arenacoordinates.get("z2"))
+									- (plugin.arenacoordinates.get("z1")))) 
+									+ plugin.arenacoordinates.get("z1") + 1);	
+							
+							loc.setY(loc.getWorld().getHighestBlockYAt(loc));																		
+													
+							player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
+						}
+						
+						plugin.worldvariables.put("started", true);
 					}
-					
-					plugin.worldvariables.put("started", true);
+					else {
+						player.sendMessage("Arena game has already started");
+					}
 				}
 				else {
 					player.sendMessage("You did not create the arena active");
@@ -282,9 +289,72 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			
 			return true;
 		}
+		
+		// forced spawn if player cannot find any monsters
+		else if (args[0].equalsIgnoreCase("spawn")) {
+			Player player = (Player) sender;	
+			List <Player> players = player.getWorld().getPlayers();
+			
+			if (plugin.worldvariables.get("arenaset")) {
+				if (plugin.arenasetter.get("arenasetter") == player) {
+					if (plugin.worldvariables.get("started") == true) {
+						//Array for monster ids for spawning
+						int monsterIds [] = new int[10];
+						
+						monsterIds[0] = 50; //53 is Giant
+						monsterIds[1] = 51;	
+						monsterIds[2] = 54;
+						monsterIds[3] = 55;	
+						monsterIds[4] = 56;	
+						monsterIds[5] = 57;	
+						monsterIds[6] = 59;	
+						monsterIds[7] = 60;	
+						monsterIds[8] = 61;	
+						monsterIds[9] = 62;				
+
+				        // spawn
+						int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
+						int difz = plugin.arenacoordinates.get("z2") - plugin.arenacoordinates.get("z1");
+						int area = difx * difz;
+						int spawnNum = area / 500;					
+						
+						// if area is too small, set spawn number to a certain number
+						if (spawnNum < 4) {
+							spawnNum = 4;
+						}				
+						
+						Location loc = player.getLocation();
+				        Random randomnum = new Random();        	
+						
+						for (int i = 0; i < spawnNum; i++) {
+							loc.setX(randomnum.nextInt(((plugin.arenacoordinates.get("x2"))
+									- (plugin.arenacoordinates.get("x1")))) 
+									+ plugin.arenacoordinates.get("x1") + 1);
+							
+							loc.setZ(randomnum.nextInt(((plugin.arenacoordinates.get("z2"))
+									- (plugin.arenacoordinates.get("z1")))) 
+									+ plugin.arenacoordinates.get("z1") + 1);	
+							
+							loc.setY(loc.getWorld().getHighestBlockYAt(loc));																		
+													
+							player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));									
+						}					
+					}
+					else {
+						player.sendMessage("Arena game has not started");
+					}					
+				}
+				else {
+					player.sendMessage("You did not create the arena active");
+				}				
+			}
+			else {
+				player.sendMessage("Arena has not been set");
+			}			
+			
+			return true;
+		}		
 
 		return false;	
 	}	
 }
-
-

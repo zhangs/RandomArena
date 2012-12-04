@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -40,7 +42,7 @@ public class RandomArenaListener implements Listener {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage(this.plugin.getConfig().getString("Currently using RandomArena 0.0.1"));
+        event.getPlayer().sendMessage(this.plugin.getConfig().getString("sample.message"));
         plugin.playersready.put(event.getPlayer(), false);  
         event.getPlayer().setItemInHand(new ItemStack (Material.DIAMOND_SWORD));
         event.getPlayer().getInventory().addItem(new ItemStack(Material.BOW, 1));
@@ -71,6 +73,58 @@ public class RandomArenaListener implements Listener {
 			}
 		}
 	}    
+	
+	// When creator of event leaves server
+	@EventHandler
+	public void arenacreatorquit (PlayerQuitEvent event) {
+		if (plugin.arenasetter.get("arenasetter") == event.getPlayer()) {
+			plugin.worldvariables.put("arenaset", false);
+			plugin.worldvariables.put("started", false);
+			
+			List <Player> players = event.getPlayer().getWorld().getPlayers();
+	        for (int i = 0; i < players.size(); i++) {
+	        	players.get(i).sendMessage("Arena setter has exited the server. Game ends!");
+	        }
+	        
+	        // Remove wall of obsidian to release player	        
+	        Location blockloc = event.getPlayer().getLocation();
+
+	        for(int x = plugin.arenacoordinates.get("x1"); x <= plugin.arenacoordinates.get("x2"); x++) {
+	        	for(int z = plugin.arenacoordinates.get("z1"); z <= plugin.arenacoordinates.get("z2"); z++) {
+	        		if(x == plugin.arenacoordinates.get("x1") || x == plugin.arenacoordinates.get("x2")
+	        				|| z == plugin.arenacoordinates.get("z1") || z == plugin.arenacoordinates.get("z2")) {
+	        			if(x == plugin.arenacoordinates.get("x1")) {
+	        				blockloc.setZ(z - 1);
+	        				blockloc.setX(x);
+	        			}
+	        			if(x == plugin.arenacoordinates.get("x2")) {
+	        				blockloc.setZ(z + 1);
+	        				blockloc.setX(x);			        				
+	        			}
+	        			if(z == plugin.arenacoordinates.get("z1")) {
+	        				blockloc.setZ(z);			        				
+	        				blockloc.setX(x - 1);
+	        			}
+	        			
+	        			if(z == plugin.arenacoordinates.get("z2")) {
+	        				blockloc.setZ(z);
+	        				blockloc.setX(x + 1);
+	        			}
+	        			
+	        			// set height of wall
+	        			int originalblock = blockloc.getWorld().getHighestBlockYAt(blockloc);
+	        			originalblock = originalblock - 12;
+
+	        			for(int y = originalblock; y <originalblock + 12; y++) {
+	        				blockloc.setY(y);
+	        				blockloc.getWorld().getBlockAt(blockloc).setType(Material.AIR);
+	        			}
+	        		}			        					        	
+	        	}
+	        }	        
+	    }
+	}
+	
 		
 	// when enemy is killed by player
 	@EventHandler
@@ -82,6 +136,19 @@ public class RandomArenaListener implements Listener {
 			players = event.getEntity().getKiller().getWorld().getPlayers();		    	    	
 			
 			Player player = (Player) event.getEntity().getKiller();
+			
+	        // spawn
+			int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
+			int difz = plugin.arenacoordinates.get("z2") - plugin.arenacoordinates.get("z1");
+			int area = difx * difz;
+			int spawnNum = area / 500;
+			
+			
+			// if area is too small, set spawn number to a certain number
+			if (spawnNum < 4) {
+				spawnNum = 4;
+			}				
+			spawnNum = spawnNum + randomnum.nextInt(spawnNum / 4);
 			
 			//Array for monster ids that are spawned in
 			int monsterIds [] = new int[10];
@@ -96,21 +163,134 @@ public class RandomArenaListener implements Listener {
 			monsterIds[8] = 61;	
 			monsterIds[9] = 62;
 							
-			if (plugin.worldvariables.get("started") && plugin.playersready.get(event.getEntity().getKiller())) {				
+			if (plugin.worldvariables.get("started") && plugin.playersready.get(event.getEntity().getKiller())) {		
+				if(event.getEntity().getType().getTypeId() == 53) {
+					plugin.monsterskilled.put("killed", plugin.monsterskilled.get("killed") + spawnNum);
+				} 
+				else {
 				plugin.monsterskilled.put("killed", plugin.monsterskilled.get("killed") + 1);	
 				
 		        for (int i = 0; i < plugin.playersready.size(); i++) {
 		        	players.get(i).sendMessage(plugin.monsterskilled.get("killed") + " monsters have been killed!");
-		        }
+		        	}
+				}
 			}
 			
-			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0) {
+			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0 || event.getEntity().getType().getTypeId() == 53) {
 		        plugin.monsterskilled.put("wave", plugin.monsterskilled.get("wave") + 1);
 		    	
 		        //Logger for wave incrementation
-		        plugin.logger.info("the current wave is " + plugin.monsterskilled.get("wave"));
+		        plugin.logger.info("The current wave is " + (plugin.monsterskilled.get("wave") + 1));
 		        
-		    	
+		    	// Reward for player
+		        if (plugin.monsterskilled.get("wave") == 1) {
+		        	player.getInventory().setBoots(new ItemStack(Material.LEATHER_BOOTS));
+		        	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_FIRE, 1);
+                }               
+                if (plugin.monsterskilled.get("wave") == 2) {
+                	player.getInventory().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
+		        	player.getInventory().getLeggings().addEnchantment(Enchantment.PROTECTION_FIRE, 1);
+                }
+                if (plugin.monsterskilled.get("wave") == 3) {
+                	player.getInventory().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
+		        	player.getInventory().getChestplate().addEnchantment(Enchantment.PROTECTION_FIRE, 1);
+                }               
+                if (plugin.monsterskilled.get("wave") == 4) {
+                	player.getInventory().setHelmet(new ItemStack(Material.LEATHER_HELMET));
+		        	player.getInventory().getHelmet().addEnchantment(Enchantment.PROTECTION_FIRE, 1);
+                }		        
+                if (plugin.monsterskilled.get("wave") == 5) {
+                	ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+                	weapon.addEnchantment(Enchantment.DAMAGE_ALL, 1);
+                	player.getInventory().addItem(weapon);
+		        	player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 5));
+                }
+                if (plugin.monsterskilled.get("wave") == 6) {
+                	player.getInventory().setBoots(new ItemStack(Material.GOLD_BOOTS));
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_FIRE, 2);
+                }
+                if (plugin.monsterskilled.get("wave") == 7) {
+                	player.getInventory().setLeggings(new ItemStack(Material.GOLD_LEGGINGS));
+		        	player.getInventory().getLeggings().addEnchantment(Enchantment.PROTECTION_FIRE, 2);
+                }
+                if (plugin.monsterskilled.get("wave") == 8) {
+                	player.getInventory().setChestplate(new ItemStack(Material.GOLD_CHESTPLATE));
+		        	player.getInventory().getChestplate().addEnchantment(Enchantment.PROTECTION_FIRE, 2);
+                }               
+                if (plugin.monsterskilled.get("wave") == 9) {
+                	player.getInventory().setHelmet(new ItemStack(Material.GOLD_HELMET));
+		        	player.getInventory().getHelmet().addEnchantment(Enchantment.PROTECTION_FIRE, 2);
+                }		        
+                if (plugin.monsterskilled.get("wave") == 10) {
+                	ItemStack weapon = new ItemStack(Material.BOW);
+                	weapon.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+                	player.getInventory().addItem(weapon);
+                	player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 5));
+                }
+                if (plugin.monsterskilled.get("wave") == 11) {
+                	player.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_FIRE, 3);
+                }
+                if (plugin.monsterskilled.get("wave") == 12) {
+                	player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+		        	player.getInventory().getLeggings().addEnchantment(Enchantment.PROTECTION_FIRE, 3);
+                }
+                if (plugin.monsterskilled.get("wave") == 13) {
+                	player.getInventory().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+		        	player.getInventory().getChestplate().addEnchantment(Enchantment.PROTECTION_FIRE, 3);
+                }               
+                if (plugin.monsterskilled.get("wave") == 14) {
+                	player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
+		        	player.getInventory().getHelmet().addEnchantment(Enchantment.PROTECTION_FIRE, 3);
+                }		        
+                if (plugin.monsterskilled.get("wave") == 15) {
+                	ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+                	weapon.addEnchantment(Enchantment.DAMAGE_ALL, 3);
+                	weapon.addEnchantment(Enchantment.KNOCKBACK, 2);
+                	player.getInventory().addItem(weapon);
+                	player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 5));
+                }
+                if (plugin.monsterskilled.get("wave") == 16) {
+                	player.getInventory().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_FIRE, 4);
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+                }
+                if (plugin.monsterskilled.get("wave") == 17) {
+                	player.getInventory().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
+		        	player.getInventory().getLeggings().addEnchantment(Enchantment.PROTECTION_FIRE, 4);
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+                }
+                if (plugin.monsterskilled.get("wave") == 18) {
+                	player.getInventory().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
+		        	player.getInventory().getChestplate().addEnchantment(Enchantment.PROTECTION_FIRE, 4);
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+                }               
+                if (plugin.monsterskilled.get("wave") == 19) {
+                	player.getInventory().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
+		        	player.getInventory().getHelmet().addEnchantment(Enchantment.PROTECTION_FIRE, 4);
+                	player.getInventory().getBoots().addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+                }		        
+                if (plugin.monsterskilled.get("wave") == 20) {
+                	ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+                	weapon.addEnchantment(Enchantment.DAMAGE_ALL, 5);
+                	weapon.addEnchantment(Enchantment.KNOCKBACK, 2);
+                	player.getInventory().addItem(weapon);
+                	player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 5));
+                }
+                if (plugin.monsterskilled.get("wave") > 20) {
+                	player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 5));
+                }
+                if(plugin.monsterskilled.get("wave") > 20 && plugin.monsterskilled.get("wave") % 5 == 0) {
+                	ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+                	weapon.addEnchantment(Enchantment.DAMAGE_ALL, 5);
+                	weapon.addEnchantment(Enchantment.KNOCKBACK, 2);
+                	weapon.addEnchantment(Enchantment.DAMAGE_ARTHROPODS, 5);
+                	weapon.addEnchantment(Enchantment.DAMAGE_UNDEAD, 5);
+                	player.getInventory().addItem(weapon);
+                }
+                
+                
+                
 		    	// Whenever a new wave starts, any world events are removed until triggered again
 		        plugin.worldvariables.put("torrent", false);
 				plugin.worldvariables.put("lightning", false); 		
@@ -126,18 +306,6 @@ public class RandomArenaListener implements Listener {
 		        	}
 		        }		        
 				
-		        // spawn
-				int difx = plugin.arenacoordinates.get("x2") - plugin.arenacoordinates.get("x1");
-				int difz = plugin.arenacoordinates.get("z2") - plugin.arenacoordinates.get("z1");
-				int area = difx * difz;
-				int spawnNum = area / 500;
-				
-				
-				// if area is too small, set spawn number to a certain number
-				if (spawnNum < 4) {
-					spawnNum = 4;
-				}				
-				spawnNum = spawnNum + randomnum.nextInt(spawnNum / 4);
 							
 				Location loc = player.getLocation();
 		        
@@ -156,9 +324,9 @@ public class RandomArenaListener implements Listener {
 						player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
 					}
 					else if (plugin.monsterskilled.get("wave") % 5 == 0) {
-						player.getWorld().spawnEntity(loc, EntityType.fromId(53));
-						spawnNum = zombieIncrease;
-						zombieIncrease++;
+						player.getWorld().spawnEntity(loc, EntityType.fromId(53));						
+						spawnNum = 1;
+						
 					}
 					
 					
@@ -177,6 +345,7 @@ public class RandomArenaListener implements Listener {
 		plugin.worldvariables.put("lightning", false); 
 		plugin.worldvariables.put("teleport", false);        				
         plugin.monsterskilled.put("wave", 0);
+        plugin.monsterskilled.put("killed", 0);        
     }
     
     // world events decided here
