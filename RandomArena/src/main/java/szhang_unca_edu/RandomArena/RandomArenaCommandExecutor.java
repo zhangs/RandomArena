@@ -1,5 +1,5 @@
 package szhang_unca_edu.RandomArena;
-
+import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -72,7 +72,14 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 				        plugin.arenacoordinates.put("z1", Integer.parseInt(args[2]));
 				        plugin.arenacoordinates.put("z2", Integer.parseInt(args[4]));					
 					}				
-	
+					
+					//Logger for set arena location
+					 plugin.logger.info("Arena set at: x1: " + plugin.arenacoordinates.get("x1") 
+							 + " x2: " + plugin.arenacoordinates.get("x2") 
+							 + " z1: " + plugin.arenacoordinates.get("z1")
+							 + " z2: " + plugin.arenacoordinates.get("z2"));
+					 
+					//Setting hashmaps
 			        plugin.worldvariables.put("arenaset", true);
 			        plugin.arenasetter.put("arenasetter", player);
 			        plugin.playersready.put(player, true);	

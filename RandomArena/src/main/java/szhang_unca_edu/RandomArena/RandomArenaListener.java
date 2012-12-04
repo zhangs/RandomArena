@@ -23,6 +23,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 public class RandomArenaListener implements Listener {
     private final RandomArena plugin;
+    int zombieIncrease = 1;
 
     /*
      * This listener needs to know about the plugin which it came from
@@ -39,7 +40,7 @@ public class RandomArenaListener implements Listener {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage(this.plugin.getConfig().getString("sample.message"));
+        event.getPlayer().sendMessage(this.plugin.getConfig().getString("Currently using RandomArena 0.0.1"));
         plugin.playersready.put(event.getPlayer(), false);  
         event.getPlayer().setItemInHand(new ItemStack (Material.DIAMOND_SWORD));
         event.getPlayer().getInventory().addItem(new ItemStack(Material.BOW, 1));
@@ -82,8 +83,8 @@ public class RandomArenaListener implements Listener {
 			
 			Player player = (Player) event.getEntity().getKiller();
 			
+			//Array for monster ids that are spawned in
 			int monsterIds [] = new int[10];
-			
 			monsterIds[0] = 50;
 			monsterIds[1] = 51;	
 			monsterIds[2] = 54;
@@ -105,8 +106,12 @@ public class RandomArenaListener implements Listener {
 			
 			if ((plugin.monsterskilled.get("killed") % plugin.monsterskilled.get("killtospawn")) == 0) {
 		        plugin.monsterskilled.put("wave", plugin.monsterskilled.get("wave") + 1);
-				
-		        // Whenever a new wave starts, any world events are removed until triggered again
+		    	
+		        //Logger for wave incrementation
+		        plugin.logger.info("the current wave is " + plugin.monsterskilled.get("wave"));
+		        
+		    	
+		    	// Whenever a new wave starts, any world events are removed until triggered again
 		        plugin.worldvariables.put("torrent", false);
 				plugin.worldvariables.put("lightning", false); 		
 				plugin.worldvariables.put("teleport", false); 		        				
@@ -145,9 +150,18 @@ public class RandomArenaListener implements Listener {
 							- (plugin.arenacoordinates.get("z1")))) 
 							+ plugin.arenacoordinates.get("z1") + 1);	
 
-					loc.setY(loc.getWorld().getHighestBlockYAt(loc));			
+					loc.setY(loc.getWorld().getHighestBlockYAt(loc));	
 					
-					player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
+					if(plugin.monsterskilled.get("wave") % 5 != 0) {
+						player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
+					}
+					else if (plugin.monsterskilled.get("wave") % 5 == 0) {
+						player.getWorld().spawnEntity(loc, EntityType.fromId(53));
+						spawnNum = zombieIncrease;
+						zombieIncrease++;
+					}
+					
+					
 				}			
 			}
 		}
