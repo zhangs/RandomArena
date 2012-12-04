@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * This is the main class of the sample plug-in
  */
 public class RandomArena extends JavaPlugin {	
+	//Initial variable declaration
 	RandomArenaLogger logger;
 	public Map <String, Integer> arenacoordinates;
 	public Map <String, Integer> monsterskilled;
@@ -34,6 +35,7 @@ public class RandomArena extends JavaPlugin {
 		worldvariables = new HashMap<String, Boolean>();
 		arenasetter = new HashMap<String, Player>();
 		
+		//Initiates logger
 		logger = new RandomArenaLogger(this);
 		logger.info("plugin enabled");
 
@@ -55,7 +57,7 @@ public class RandomArena extends JavaPlugin {
     	 logger.info("plugin disabled");
         
     }
-    
+    	//unused
 	public void setMetadata(Player player, String key, Object value, RandomArena plugin) {
 		player.setMetadata(key, new FixedMetadataValue(plugin, value));
 	}
