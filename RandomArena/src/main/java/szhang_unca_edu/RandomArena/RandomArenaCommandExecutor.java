@@ -10,8 +10,10 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wolf;
 
 import com.google.common.base.Joiner;
 
@@ -148,7 +150,7 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 		
 		// teleports player to starting point
 		else if (args[0].equalsIgnoreCase("teleport")) {
-			Player player = (Player) sender;								
+			Player player = (Player) sender;											
 			
 			//if there is an arena that hasn't started yet, allows the player to teleport to it
 			if (plugin.worldvariables.get("arenaset") == true && plugin.worldvariables.get("started") == false) {								        
@@ -354,6 +356,56 @@ public class RandomArenaCommandExecutor implements CommandExecutor {
 			
 			return true;
 		}		
+		
+		// Special abilities/commands player will be able to use after defeating a certain number of waves
+		
+		// Summon a tamed wolf
+		else if (args[0].equalsIgnoreCase("wolf")) {
+			Player player = (Player) sender;	
+
+			if (plugin.monsterskilled.get("wolfsummon") > 0) {						
+				plugin.monsterskilled.put("wolfsummon", plugin.monsterskilled.get("wolfsummon") - 1);	
+				
+				Wolf e = (Wolf) player.getWorld().spawn(player.getLocation(), Wolf.class);
+				e.setOwner((AnimalTamer) player);
+			}
+			else {
+				player.sendMessage("You do not have the ability to summon a wolf right now!");
+			}
+			
+			return true;
+		}
+		
+		// Summon an Iron Golem
+		else if (args[0].equalsIgnoreCase("golem")) {
+			Player player = (Player) sender;	
+
+			if (plugin.monsterskilled.get("golemsummon") > 0) {						
+				plugin.monsterskilled.put("golemsummon", plugin.monsterskilled.get("golemsummon") - 1);	
+				
+				player.getWorld().spawnEntity(player.getLocation(), EntityType.IRON_GOLEM);
+			}
+			else {
+				player.sendMessage("You do not have the ability to summon a golem right now!");
+			}			
+			
+			return true;
+		}		
+		
+		else if (args[0].equals("cure")) {
+			Player player = (Player) sender;	
+			
+			if (plugin.monsterskilled.get("heal") > 0) {						
+				plugin.monsterskilled.put("heal", plugin.monsterskilled.get("heal") - 1);	
+				
+	            player.setHealth(20);
+			}
+			else {
+				player.sendMessage("You do not have the ability to heal yourself right now!");
+			}
+			            
+            return true;
+		}
 
 		return false;	
 	}	

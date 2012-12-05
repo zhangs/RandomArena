@@ -9,7 +9,9 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/*
+/*Project by s_beta, powershot06, and <.......>
+ * 
+ * 
  * This is the main class of the sample plug-in
  */
 public class RandomArena extends JavaPlugin {	

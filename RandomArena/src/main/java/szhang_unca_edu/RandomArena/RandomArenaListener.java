@@ -7,8 +7,10 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -289,8 +291,6 @@ public class RandomArenaListener implements Listener {
                 	player.getInventory().addItem(weapon);
                 }
                 
-                
-                
 		    	// Whenever a new wave starts, any world events are removed until triggered again
 		        plugin.worldvariables.put("torrent", false);
 				plugin.worldvariables.put("lightning", false); 		
@@ -304,8 +304,29 @@ public class RandomArenaListener implements Listener {
 		        	if (randomnum.nextInt(100) > 40) {
 		        		worldevents(plugin.monsterskilled.get("wave"), event.getEntity().getKiller(), players);
 		        	}
+		        }	
+		        
+				// abilities added here
+		        // all players share the opportunity to use a command
+		        if (plugin.monsterskilled.get("wave") % 5 == 0) {
+		        	plugin.monsterskilled.put("heal", plugin.monsterskilled.get("heal") + 1); 
+			        for (int i = 0; i < plugin.playersready.size(); i++) {
+			        	players.get(i).sendMessage("For one time, a player can fully heal with /random heal");
+		        	}
+				}
+		        	
+		        if (plugin.monsterskilled.get("wave") % 2 == 0) {
+		        	plugin.monsterskilled.put("wolfsummon", plugin.monsterskilled.get("wolfsummon") + 1); 
+			        for (int i = 0; i < plugin.playersready.size(); i++) {
+			        	players.get(i).sendMessage("For one time, a player can summon a tamed wolf with /random wolf");
+			        }							        	
+		        }
+		        if (plugin.monsterskilled.get("wave") % 6 == 0) {
+		        	plugin.monsterskilled.put("golemsummon", plugin.monsterskilled.get("golemsummon") + 1); 
+			        for (int i = 0; i < plugin.playersready.size(); i++) {
+			        	players.get(i).sendMessage("For one time, a player can summon an Iron Goem with /random golem");
+			        }
 		        }		        
-				
 							
 				Location loc = player.getLocation();
 		        
@@ -321,12 +342,11 @@ public class RandomArenaListener implements Listener {
 					loc.setY(loc.getWorld().getHighestBlockYAt(loc));	
 					
 					if(plugin.monsterskilled.get("wave") % 5 != 0) {
-						player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));
+						player.getWorld().spawnEntity(loc, EntityType.fromId(monsterIds[randomnum.nextInt(10)]));						
 					}
 					else if (plugin.monsterskilled.get("wave") % 5 == 0) {
 						player.getWorld().spawnEntity(loc, EntityType.fromId(53));						
-						spawnNum = 1;
-						
+						spawnNum = 1;						
 					}
 					
 					
@@ -345,7 +365,10 @@ public class RandomArenaListener implements Listener {
 		plugin.worldvariables.put("lightning", false); 
 		plugin.worldvariables.put("teleport", false);        				
         plugin.monsterskilled.put("wave", 0);
-        plugin.monsterskilled.put("killed", 0);        
+        plugin.monsterskilled.put("killed", 0);   
+        plugin.monsterskilled.put("wolfsummon", 0);
+        plugin.monsterskilled.put("golemsummon", 0);
+        plugin.monsterskilled.put("heal", 0);        
     }
     
     // world events decided here
@@ -388,7 +411,7 @@ public class RandomArenaListener implements Listener {
 		
 		// Be careful, a flood might be coming?!
 		if (plugin.worldvariables.get("torrent")) {
-			if (randomnum.nextInt(500) < 10) {
+			if (randomnum.nextInt(500) < 5) {
 				Location loc = event.getPlayer().getLocation();
 			        
 				loc.setX(randomnum.nextInt(((plugin.arenacoordinates.get("x2")) - (plugin.arenacoordinates.get("x1")))) 
@@ -399,7 +422,7 @@ public class RandomArenaListener implements Listener {
 				
 				loc.getBlock().setType(Material.WATER);
 			}								
-		}	
+		}
 		
 		// Not that you can dodge it, but beware of lightning!
 		if (plugin.worldvariables.get("lightning")) {
