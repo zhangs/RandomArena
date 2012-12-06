@@ -9,7 +9,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/*Project by s_beta, powershot06, and <.......>
+/*Project by s_beta, powershot06, and insomniaensues
  * 
  * 
  * This is the main class of the sample plug-in
@@ -22,8 +22,6 @@ public class RandomArena extends JavaPlugin {
 	public Map <Player, Boolean> playersready;
 	public Map <String, Boolean> worldvariables;
 	public Map <String, Player> arenasetter;
-
-	
 
 
     /*
